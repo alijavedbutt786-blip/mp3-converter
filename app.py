@@ -65,8 +65,12 @@ def convert_video():
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             ydl.download([video_url])
 
-        # Formulate the response download address link
-        host_url = request.host_url.replace('http://', 'https://')
+        
+               # Forces the server to send a secure HTTPS link back to WordPress
+        clean_host = request.host.replace('http://', '').replace('https://', '')
+        download_link = f"https://{clean_host}/files/{safe_title}.mp3"
+        return jsonify({"mp3_url": download_link})
+
         download_link = f"{host_url}files/{safe_title}.mp3"
         return jsonify({"mp3_url": download_link})
 
