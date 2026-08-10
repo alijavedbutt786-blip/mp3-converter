@@ -32,7 +32,7 @@ def convert_video():
         out_template = os.path.join(DOWNLOAD_DIR, f"{safe_title}.%(ext)s")
         final_mp3_path = os.path.join(DOWNLOAD_DIR, f"{safe_title}.mp3")
 
-        # Configuration options
+                # Upgraded options to bypass YouTube bot detection firewalls
         ydl_opts = {
             'format': 'bestaudio/best',
             'outtmpl': out_template,
@@ -41,6 +41,14 @@ def convert_video():
                 'preferredcodec': 'mp3',
                 'preferredquality': '128',
             }],
+            'quiet': True,
+            'http_headers': {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+                'Accept-Language': 'en-US,en;q=0.5',
+            }
+        }
+
             'quiet': True
         }
 
