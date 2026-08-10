@@ -5,10 +5,9 @@ from flask_cors import CORS
 import yt_dlp
 
 app = Flask(__name__)
+# Robust CORS configuration to allow your WordPress site to connect
 CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 
-
-# CRUCIAL FIX: This forces Render to create the temp folders cleanly at startup
 DOWNLOAD_DIR = "/tmp/downloads"
 if not os.path.exists(DOWNLOAD_DIR):
     os.makedirs(DOWNLOAD_DIR, exist_ok=True)
@@ -22,8 +21,18 @@ def convert_video():
         return jsonify({"error": "No URL provided"}), 400
 
     try:
+        # Configuration options with browser stealth headers to bypass blocks
+        ydl_opts_meta = {
+            'quiet': True,
+            'http_headers': {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+                'Accept-Language': 'en-US,en;q=0.5',
+            }
+        }
+
         # Pre-check video metadata
-        with yt_dlp.YoutubeDL({'quiet': True}) as ydl:
+        with yt_dlp.YoutubeDL(ydl_opts_meta) as ydl:
             meta = ydl.extract_info(video_url, download=False)
             if meta.get('duration', 0) > 600:
                 return jsonify({"error": "Video too long! 10 mins max."}), 400
@@ -32,7 +41,7 @@ def convert_video():
         out_template = os.path.join(DOWNLOAD_DIR, f"{safe_title}.%(ext)s")
         final_mp3_path = os.path.join(DOWNLOAD_DIR, f"{safe_title}.mp3")
 
-                # Upgraded options to bypass YouTube bot detection firewalls
+        # Configuration options for download
         ydl_opts = {
             'format': 'bestaudio/best',
             'outtmpl': out_template,
@@ -47,9 +56,6 @@ def convert_video():
                 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
                 'Accept-Language': 'en-US,en;q=0.5',
             }
-        }
-
-            'quiet': True
         }
 
         # Clear file if it already exists to save free space
@@ -72,6 +78,5 @@ def serve_file(filename):
     return send_from_directory(DOWNLOAD_DIR, filename, as_attachment=True)
 
 if __name__ == '__main__':
-    # Default Render port assignment fallback
     port = int(os.environ.get("PORT", 10000))
     app.run(host='0.0.0.0', port=port)
