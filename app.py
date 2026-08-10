@@ -5,7 +5,8 @@ from flask_cors import CORS
 import yt_dlp
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
+
 
 # CRUCIAL FIX: This forces Render to create the temp folders cleanly at startup
 DOWNLOAD_DIR = "/tmp/downloads"
